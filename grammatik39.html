@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Grammatik-Check</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --primary-hover: #357abd;
+            --success-color: #2ec4b6;
+            --error-color: #e71d36;
+            --neutral-light: #f8f9fa;
+            --text-color: #2b2d42;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #1d3557;
+            text-align: center;
+        }
+
+        .instruction {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Fortschrittsanzeige */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Quiz-Box */
+        .question-box {
+            background: var(--neutral-light);
+            border: 2px solid #e2e8f0;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1d3557;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive, touch-freundliche Buttons */
+        .option-btn {
+            background-color: white;
+            border: 2px solid #cbd5e1;
+            padding: 15px 20px;
+            font-size: 1.15rem;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not(:disabled) {
+                border-color: var(--primary-color);
+                background-color: #f0f7ff;
+                transform: translateY(-2px);
+            }
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        /* Feedback-Zustände */
+        .option-btn.correct {
+            border-color: var(--success-color);
+            background-color: #e6f9f7;
+            color: #0f5132;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #842029;
+        }
+
+        /* Info-Box für Erklärungen */
+        .explanation-box {
+            background-color: #e0f0ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Navigation */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+        }
+
+        .btn-next:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-restart {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background-color: #5a6268;
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Падеж (Grammatik-Check)</h1>
+    <p class="instruction">Nach der Konstruktion „что это за...“ folgt das Substantiv in einem bestimmten Fall. Wähle die richtige Form aus!</p>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span id="progress-text">Frage 1/4</span>
+    </div>
+
+    <div class="question-box" id="question-text">Что это за...</div>
+    
+    <div class="options-container" id="options-container">
+        <!-- Wird dynamisch per JS befüllt -->
+    </div>
+
+    <div class="explanation-box" id="explanation-box"></div>
+
+    <div class="actions">
+        <button class="btn btn-restart" id="restart-btn">Neustart</button>
+        <button class="btn btn-next" id="next-btn" disabled>Weiter</button>
+    </div>
+</div>
+
+<script>
+    // Quiz-Fragen basierend auf den Kernpunkten der Anleitung
+    const quizData = [
+        {
+            question: "Что это за...",
+            options: [
+                { text: "книга (Nominativ)", correct: true },
+                { text: "книгу (Akkusativ)", correct: false },
+                { text: "книги (Genitiv)", correct: false }
+            ],
+            hint: "Richtig! Nach „что это за...“ steht das Substantiv im Nominativ (Wer-Fall). Da „книга“ weiblich ist, endet es auf -а."
+        },
+        {
+            question: "Что это за...",
+            options: [
+                { text: "машину (Akkusativ)", correct: false },
+                { text: "машина (Nominativ)", correct: true },
+                { text: "машины (Genitiv)", correct: false }
+            ],
+            hint: "Richtig! Auch hier wird die Grundform (Nominativ) benötigt: „машина“."
+        },
+        {
+            question: "Кто это за...",
+            options: [
+                { text: "человека (Genitiv/Akkusativ)", correct: false },
+                { text: "человеком (Instrumentalis)", correct: false },
+                { text: "человек (Nominativ)", correct: true }
+            ],
+            hint: "Richtig! Unabhängig davon, ob mit „Что“ oder „Кто“ gefragt wird, bleibt der Fall nach der Konstruktion immer der Nominativ: „человек“."
+        },
+        {
+            question: "Что это за...",
+            options: [
+                { text: "учебник (Nominativ)", correct: true },
+                { text: "учебника (Genitiv)", correct: false },
+                { text: "учебнике (Präpositiv)", correct: false }
+            ],
+            hint: "Richtig! „учебник“ ist ein maskulines Substantiv in der unbemannten Nominativ-Grundform."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let shuffledQuestions = [];
+
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const explanationBox = document.getElementById('explanation-box');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const nextBtn = document.getElementById('next-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function initQuiz() {
+        currentQuestionIndex = 0;
+        // Fragen kopieren und mischen
+        shuffledQuestions = shuffle([...quizData]);
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        nextBtn.disabled = true;
+        nextBtn.textContent = currentQuestionIndex === shuffledQuestions.length - 1 ? "Fertig" : "Weiter";
+        explanationBox.style.display = 'none';
+        optionsContainer.innerHTML = '';
+
+        const currentData = shuffledQuestions[currentQuestionIndex];
+        questionText.textContent = currentData.question;
+
+        // Fortschritt aktualisieren
+        const progressPercent = (currentQuestionIndex / shuffledQuestions.length) * 100;
+        progressFill.style.width = `${progressPercent}%`;
+        progressText.textContent = `Frage ${currentQuestionIndex + 1}/${shuffledQuestions.length}`;
+
+        // Optionen mischen und anzeigen
+        const options = shuffle([...currentData.options]);
+        options.forEach(opt => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.textContent = opt.text;
+            button.addEventListener('click', () => handleOptionClick(button, opt.correct));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function handleOptionClick(selectedButton, isCorrect) {
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        const currentData = shuffledQuestions[currentQuestionIndex];
+
+        // Alle Buttons für weitere Klicks sperren
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            selectedButton.classList.add('correct');
+            explanationBox.style.backgroundColor = '#e6f9f7';
+            explanationBox.style.borderLeftColor = 'var(--success-color)';
+            explanationBox.textContent = currentData.hint;
+        } else {
+            selectedButton.classList.add('incorrect');
+            explanationBox.style.backgroundColor = '#ffebee';
+            explanationBox.style.borderLeftColor = 'var(--error-color)';
+            explanationBox.textContent = "Leider falsch. Die Konstruktion verlangt immer den Nominativ (die Grundform des Wortes). Versuche es bei der nächsten Frage erneut!";
+            
+            // Richtige Antwort visuell hervorheben
+            buttons.forEach(btn => {
+                // Finde heraus, welche Option im Original-Datensatz korrekt war
+                const optText = btn.textContent;
+                const originalOpt = currentData.options.find(o => o.text === optText);
+                if (originalOpt && originalOpt.correct) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        explanationBox.style.display = 'block';
+        nextBtn.disabled = false;
+    }
+
+    function handleNext() {
+        if (currentQuestionIndex < shuffledQuestions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            // Quiz beendet
+            progressFill.style.width = '100%';
+            questionText.textContent = "Ура! (Geschafft!)";
+            optionsContainer.innerHTML = '<p style="text-align:center; font-size:1.1rem; padding: 10px;">Du hast alle Fragen des Grammatik-Checks durchgearbeitet.</p>';
+            explanationBox.style.display = 'none';
+            nextBtn.disabled = true;
+        }
+    }
+
+    nextBtn.addEventListener('click', handleNext);
+    restartBtn.addEventListener('click', initQuiz);
+
+    // Quiz beim Laden starten
+    initQuiz();
+</script>
+
+</body>
+</html>
