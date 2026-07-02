@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Textmarker-Aufgabe</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ec4b6;
+            --highlight-color: #ffe066;
+            --neutral-light: #f8f9fa;
+            --text-color: #2b2d42;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #1d3557;
+            text-align: center;
+        }
+
+        .instruction {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        /* Dialog-Boxen */
+        .dialog-container {
+            min-height: 160px;
+        }
+
+        .dialog-box {
+            background: var(--neutral-light);
+            border: 2px solid #e2e8f0;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            font-size: 1.25rem;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .dialog-box.active {
+            display: block;
+        }
+
+        .dialog-line {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: #1d3557;
+            margin-right: 8px;
+            min-width: 35px;
+        }
+
+        /* Einzelne interaktive Wörter */
+        .word {
+            padding: 4px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            display: inline-block;
+            margin: 2px 0;
+        }
+
+        @media (pointer: coarse) {
+            .word {
+                padding: 8px 8px;
+                margin: 4px 0;
+            }
+        }
+
+        @media (hover: hover) {
+            .word:hover:not(.highlighted) {
+                background-color: #e2e8f0;
+            }
+        }
+
+        .word.highlighted {
+            background-color: var(--highlight-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+        }
+
+        .word.solved-green {
+            background-color: var(--success-color) !important;
+            color: white !important;
+        }
+
+        /* Feedback-Bereich */
+        .feedback-box {
+            background-color: #e6f9f7;
+            border-left: 4px solid var(--success-color);
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Steuerung unten */
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-restart {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+            display: none;
+        }
+
+        .btn-next:hover {
+            background-color: #357abd;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Найди конструкцию (Textmarker)</h1>
+    <p class="instruction">Tippe die Wörter an, die zusammen die feste Konstruktion <strong>„что это за...“</strong> bilden.</p>
+    
+    <div class="progress" id="progress-text">Dialog 1 von 3</div>
+
+    <div class="dialog-container">
+        <!-- Beispiel 1 -->
+        <div class="dialog-box active" id="d-0">
+            <div class="dialog-line">
+                <span class="speaker">А:</span>
+                <span class="word" data-target="true">Что</span>
+                <span class="word" data-target="true">это</span>
+                <span class="word" data-target="true">за</span>
+                <span class="word">машина?</span>
+            </div>
+            <div class="dialog-line">
+                <span class="speaker">Б:</span>
+                <span class="word">Это</span>
+                <span class="word">новая</span>
+                <span class="word">модель</span>
+                <span class="word">Тойоты.</span>
+            </div>
+        </div>
+
+        <!-- Beispiel 2 -->
+        <div class="dialog-box" id="d-1">
+            <div class="dialog-line">
+                <span class="speaker">А:</span>
+                <span class="word">Я</span>
+                <span class="word">не</span>
+                <span class="word">понимаю,</span>
+                <span class="word" data-target="true">что</span>
+                <span class="word" data-target="true">это</span>
+                <span class="word" data-target="true">за</span>
+                <span class="word">книга.</span>
+            </div>
+            <div class="dialog-line">
+                <span class="speaker">Б:</span>
+                <span class="word">Это</span>
+                <span class="word">мой</span>
+                <span class="word">новый</span>
+                <span class="word">учебник.</span>
+            </div>
+        </div>
+
+        <!-- Beispiel 3 -->
+        <div class="dialog-box" id="d-2">
+            <div class="dialog-line">
+                <span class="speaker">А:</span>
+                <span class="word">Посмотри</span>
+                <span class="word">туда!</span>
+                <span class="word" data-target="true">Что</span>
+                <span class="word" data-target="true">это</span>
+                <span class="word" data-target="true">за</span>
+                <span class="word">странный</span>
+                <span class="word">предмет?</span>
+            </div>
+            <div class="dialog-line">
+                <span class="speaker">Б:</span>
+                <span class="word">Я</span>
+                <span class="word">кам</span>
+                <span class="word">не</span>
+                <span class="word">знаю.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback-Bereich -->
+    <div class="feedback-box" id="feedback-display"></div>
+
+    <!-- Steuerung -->
+    <div class="controls">
+        <button class="btn btn-restart" id="reset-btn">Zurücksetzen</button>
+        <button class="btn btn-next" id="next-btn">Nächster Dialog</button>
+    </div>
+</div>
+
+<script>
+    let activeIndex = 0;
+    const totalDialogs = 3;
+    let currentDialogSolved = false;
+
+    const feedbackDisplay = document.getElementById('feedback-display');
+    const progressText = document.getElementById('progress-text');
+    const nextBtn = document.getElementById('next-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    function initInteractiveWords() {
+        const words = document.querySelectorAll('.word');
+        words.forEach(word => {
+            word.addEventListener('click', () => {
+                const parentBox = word.closest('.dialog-box');
+                
+                // Klick nur erlauben, wenn dieser Dialog aktiv und noch nicht gelöst ist
+                if (parentBox.classList.contains('active') && !currentDialogSolved) {
+                    word.classList.toggle('highlighted');
+                    checkCurrentSolution(parentBox);
+                }
+            });
+        });
+    }
+
+    function checkCurrentSolution(activeBox) {
+        const wordsInBox = activeBox.querySelectorAll('.word');
+        let allCorrectFound = true;
+        let noWrongSelected = true;
+
+        wordsInBox.forEach(word => {
+            const isTarget = word.getAttribute('data-target') === 'true';
+            const isHighlighted = word.classList.contains('highlighted');
+
+            if (isTarget && !isHighlighted) allCorrectFound = false;
+            if (!isTarget && isHighlighted) noWrongSelected = false;
+        });
+
+        if (allCorrectFound && noWrongSelected) {
+            currentDialogSolved = true;
+            
+            // Gefundene Wörter grün einfärben
+            wordsInBox.forEach(word => {
+                if (word.getAttribute('data-target') === 'true') {
+                    word.classList.add('solved-green');
+                }
+            });
+
+            feedbackDisplay.style.display = 'block';
+            
+            if (activeIndex < totalDialogs - 1) {
+                feedbackDisplay.innerHTML = "<strong>Правильно! (Richtig!)</strong> Du hast die Struktur gefunden. Klicke auf 'Nächster Dialog'.";
+                nextBtn.style.display = 'block';
+            } else {
+                feedbackDisplay.innerHTML = "<strong>Отлично! (Wunderbar!)</strong> Du hast alle drei Übungen fehlerfrei gelöst und die Struktur perfekt erkannt! 🎉";
+                nextBtn.style.display = 'none';
+            }
+        } else {
+            feedbackDisplay.style.display = 'none';
+            nextBtn.style.display = 'none';
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (activeIndex < totalDialogs - 1) {
+            currentDialogSolved = false;
+            document.getElementById(`d-${activeIndex}`).classList.remove('active');
+            activeIndex++;
+            document.getElementById(`d-${activeIndex}`).classList.add('active');
+            
+            progressText.textContent = `Dialog ${activeIndex + 1} von ${totalDialogs}`;
+            feedbackDisplay.style.display = 'none';
+            nextBtn.style.display = 'none';
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        activeIndex = 0;
+        currentDialogSolved = false;
+        document.querySelectorAll('.dialog-box').forEach(b => b.classList.remove('active'));
+        document.getElementById('d-0').classList.add('active');
+        document.querySelectorAll('.word').forEach(w => w.classList.remove('highlighted', 'solved-green'));
+        progressText.textContent = `Dialog 1 von ${totalDialogs}`;
+        feedbackDisplay.style.display = 'none';
+        nextBtn.style.display = 'none';
+    });
+
+    // Starten
+    initInteractiveWords();
+</script>
+
+</body>
+</html>
