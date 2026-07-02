@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Hörverstehen</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --primary-hover: #357abd;
+            --success-color: #2ec4b6;
+            --error-color: #e71d36;
+            --neutral-light: #f8f9fa;
+            --text-color: #2b2d42;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            color: #1d3557;
+            text-align: center;
+        }
+
+        .instruction {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Audio Button Bereich */
+        .audio-section {
+            margin-bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .play-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .play-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 25px solid white;
+            margin-left: 6px;
+        }
+
+        /* Antwort-Optionen */
+        .options-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: var(--neutral-light);
+            border: 2px solid #e2e8f0;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+            color: var(--text-color);
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not(:disabled) {
+                border-color: var(--primary-color);
+                background-color: #f0f7ff;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #e6f9f7;
+            border-color: var(--success-color);
+            color: #0f5132;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fff5f5;
+            border-color: var(--error-color);
+            color: #842029;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        /* Feedback Box */
+        .feedback-box {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-box.success {
+            background-color: #e6f9f7;
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .feedback-box.error {
+            background-color: #fff5f5;
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+        }
+
+        /* Steuerung */
+        .controls {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-restart {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: #6c757d;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        .btn-restart:hover {
+            background-color: #5a6268;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Послушай и выбери (Hörverstehen)</h1>
+    <p class="instruction">Setze am besten Kopfhörer auf. Setze das Audio ab und wähle den Satz aus, den du gehört hast.</p>
+
+    <!-- Audio abspielen -->
+    <div class="audio-section">
+        <button class="play-btn" id="play-audio-btn" title="Audio abspielen">
+            <div class="play-icon"></div>
+        </button>
+    </div>
+
+    <!-- Feedback Meldung -->
+    <div class="feedback-box" id="feedback-display"></div>
+
+    <!-- Antwortoptionen -->
+    <div class="options-container" id="options-container">
+        <!-- Buttons werden dynamisch eingefügt -->
+    </div>
+
+    <!-- Steuerung -->
+    <div class="controls">
+        <button class="btn-restart" id="restart-btn">Nächster Satz / Neustart</button>
+    </div>
+</div>
+
+<script>
+    // Sätze inkl. Audio-Text und Ablenkern
+    const audioTasks = [
+        {
+            correctText: "Что это у тебя за книга?",
+            distractors: ["Что это у тебя за машина?", "Кто это за человек?"],
+            translation: "Was ist das für ein Buch, das du da hast?"
+        },
+        {
+            correctText: "Что это за странный предмет?",
+            distractors: ["Что это за новая модель?", "Что это за учебник?"],
+            translation: "Was ist das für ein seltsamer Gegenstand?"
+        }
+    ];
+
+    let currentTaskIndex = 0;
+    let audioPlayed = false;
+
+    const playBtn = document.getElementById('play-audio-btn');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackDisplay = document.getElementById('feedback-display');
+    const restartBtn = document.getElementById('restart-btn');
+
+    // Mischer
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Sprachausgabe konfigurieren (Männliche russische Stimme suchen)
+    function playSentence(text) {
+        if ('speechSynthesis' in window) {
+            // Eventuelle laufende Sprachausgaben stoppen
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ru-RU';
+            
+            // Versuchen, eine männliche russische Stimme zu finden
+            const voices = window.speechSynthesis.getVoices();
+            const russianMaleVoice = voices.find(voice => 
+                voice.lang.startsWith('ru') && 
+                (voice.name.toLowerCase().includes('male') || voice.name.toLowerCase().includes('pavel') || voice.name.toLowerCase().includes('dmitry'))
+            );
+            
+            if (russianMaleVoice) {
+                utterance.voice = russianMaleVoice;
+            }
+            
+            // Natürliche Sprechgeschwindigkeit für Lernende
+            utterance.rate = 0.85; 
+            window.speechSynthesis.speak(utterance);
+            audioPlayed = true;
+        } else {
+            alert("Die Sprachausgabe wird von deinem Browser leider nicht unterstützt.");
+        }
+    }
+
+    function loadTask() {
+        feedbackDisplay.style.display = 'none';
+        optionsContainer.innerHTML = '';
+        audioPlayed = false;
+
+        const currentTask = audioTasks[currentTaskIndex];
+        
+        // Optionen mischen
+        const options = shuffle([currentTask.correctText, ...currentTask.distractors]);
+
+        options.forEach(text => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = text;
+            btn.addEventListener('click', () => checkAnswer(btn, text, currentTask));
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedBtn, selectedText, task) {
+        if (!audioPlayed) {
+            feedbackDisplay.className = "feedback-box error";
+            feedbackDisplay.textContent = "Höre dir zuerst das Audiobeispiel an!";
+            feedbackDisplay.style.display = 'block';
+            return;
+        }
+
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedText === task.correctText) {
+            selectedBtn.classList.add('correct');
+            feedbackDisplay.className = "feedback-box success";
+            feedbackDisplay.innerHTML = `<strong>Правильно! (Richtig!)</strong><br><small>Bedeutung: "${task.translation}"</small>`;
+        } else {
+            selectedBtn.classList.add('incorrect');
+            
+            // Richtige Antwort hervorheben
+            buttons.forEach(btn => {
+                if (btn.textContent === task.correctText) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            feedbackDisplay.className = "feedback-box error";
+            feedbackDisplay.textContent = "Das war leider die falsche Option. Schau dir die richtige Lösung an.";
+        }
+        feedbackDisplay.style.display = 'block';
+    }
+
+    playBtn.addEventListener('click', () => {
+        const currentTask = audioTasks[currentTaskIndex];
+        playSentence(currentTask.correctText);
+    });
+
+    restartBtn.addEventListener('click', () => {
+        currentTaskIndex = (currentTaskIndex + 1) % audioTasks.length;
+        loadTask();
+    });
+
+    // Voices initial laden (wichtig für Chrome/Safari, da getVoices asynchron lädt)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {};
+    }
+
+    // Start
+    loadTask();
+</script>
+
+</body>
+</html>
