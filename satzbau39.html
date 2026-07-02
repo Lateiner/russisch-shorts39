@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Schüttelsatz (Sofort-Feedback)</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ec4b6;
+            --error-color: #e71d36;
+            --neutral-light: #f8f9fa;
+            --text-color: #2b2d42;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #1d3557;
+            text-align: center;
+        }
+
+        .instruction {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        /* Arbeitsbereiche */
+        .pool-zone, .target-zone {
+            background: var(--neutral-light);
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .target-zone {
+            border-style: solid;
+            border-color: #e2e8f0;
+            background-color: #ffffff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .zone-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #6c757d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Die Wort-Kacheln */
+        .word-chip {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 10px 18px;
+            font-size: 1.15rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.15s ease;
+        }
+
+        @media (hover: hover) {
+            .word-chip:hover {
+                border-color: var(--primary-color);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(74, 144, 226, 0.15);
+            }
+        }
+
+        /* Echtzeit-Zustände */
+        .target-zone.correct-partial {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+
+        .target-zone.correct-full {
+            border-color: var(--success-color);
+            background-color: #e6f9f7;
+            pointer-events: none; /* Sperrt Klicks im Zielfeld bei Erfolg */
+        }
+
+        .target-zone.incorrect-order {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+        }
+
+        /* Buttons & Feedback */
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-restart {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            border: none;
+            background-color: #6c757d;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        .btn-restart:hover {
+            background-color: #5a6268;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 35px;
+        }
+
+        .success-text { color: var(--success-color); animation: pop 0.3s ease; }
+        .error-text { color: var(--error-color); }
+
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Составь предложение</h1>
+    <p class="instruction">Bringe die Wörter in die richtige Reihenfolge. Falsche Platzierungen geben sofortiges Feedback.</p>
+    
+    <div class="progress" id="progress-text">Satz 1 von 5</div>
+
+    <div class="zone-title">Deine Antwort:</div>
+    <div class="target-zone" id="target-container"></div>
+
+    <div class="zone-title">Wort-Pool:</div>
+    <div class="pool-zone" id="pool-container"></div>
+
+    <div class="actions">
+        <button class="btn-restart" id="restart-btn">Neustart</button>
+    </div>
+
+    <div class="feedback" id="feedback-area"></div>
+</div>
+
+<script>
+    // 5 Sätze decken alle Details der Anleitung ab (inkl. Unbelebt vs. Belebt)
+    const sentencesPool = [
+        { tokens: ["Что", "это", "у", "тебя", "за", "книга?"], clean: ["Что", "это", "у", "тебя", "за", "книга?"] },
+        { tokens: ["Это", "учебник", "по", "русскому", "языку."], clean: ["Это", "учебник", "по", "русскому", "языку."] },
+        { tokens: ["Что", "это", "за", "машина?"], clean: ["Что", "это", "за", "машина?"] },
+        { tokens: ["Это", "новая", "модель", "Toyota."], clean: ["Это", "новая", "модель", "Toyota."] },
+        { tokens: ["Кто", "это", "за", "человек?"], clean: ["Кто", "это", "за", "человек?"] }
+    ];
+
+    let currentSentenceIndex = 0;
+    let poolWords = [];
+    let targetWords = [];
+    let isTransitioning = false;
+
+    const poolContainer = document.getElementById('pool-container');
+    const targetContainer = document.getElementById('target-container');
+    const restartBtn = document.getElementById('restart-btn');
+    const feedbackArea = document.getElementById('feedback-area');
+    const progressText = document.getElementById('progress-text');
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function initGame() {
+        currentSentenceIndex = 0;
+        loadSentence();
+    }
+
+    function loadSentence() {
+        isTransitioning = false;
+        feedbackArea.innerHTML = '';
+        targetContainer.className = 'target-zone';
+        progressText.textContent = `Satz ${currentSentenceIndex + 1} von ${sentencesPool.length}`;
+
+        targetWords = [];
+        const currentData = sentencesPool[currentSentenceIndex];
+        
+        // Mischen bis die Reihenfolge ungleich der Lösung ist
+        do {
+            poolWords = shuffle([...currentData.tokens]);
+        } while(poolWords.join(' ') === currentData.clean.join(' ') && poolWords.length > 1);
+
+        renderChips();
+    }
+
+    function renderChips() {
+        poolContainer.innerHTML = '';
+        targetContainer.innerHTML = '';
+
+        // Pool (wird ausgeblendet, sobald der Satz fertig ist)
+        if (poolWords.length > 0) {
+            poolWords.forEach((word, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'word-chip';
+                chip.textContent = word;
+                chip.addEventListener('click', () => { if (!isTransitioning) moveToTarget(idx); });
+                poolContainer.appendChild(chip);
+            });
+        }
+
+        // Ziel-Bereich
+        targetWords.forEach((word, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.textContent = word;
+            chip.addEventListener('click', () => { if (!isTransitioning) moveToPool(idx); });
+            targetContainer.appendChild(chip);
+        });
+    }
+
+    function moveToTarget(index) {
+        const word = poolWords[index];
+        targetWords.push(word);
+        poolWords.splice(index, 1);
+        renderChips();
+        validateSequence();
+    }
+
+    function moveToPool(index) {
+        const word = targetWords[index];
+        poolWords.push(word);
+        targetWords.splice(index, 1);
+        renderChips();
+        validateSequence();
+    }
+
+    // Direktes Echtzeit-Feedback nach jedem Worteintrag
+    function validateSequence() {
+        const currentData = sentencesPool[currentSentenceIndex];
+        
+        if (targetWords.length === 0) {
+            targetContainer.className = 'target-zone';
+            feedbackArea.innerHTML = '';
+            return;
+        }
+
+        // Abgleich des bisherigen Nutzertextes mit der richtigen Vorlage
+        let isCorrectSoFar = true;
+        for (let i = 0; i < targetWords.length; i++) {
+            if (targetWords[i] !== currentData.clean[i]) {
+                isCorrectSoFar = false;
+                break;
+            }
+        }
+
+        if (!isCorrectSoFar) {
+            targetContainer.className = 'target-zone incorrect-order';
+            feedbackArea.innerHTML = '<span class="error-text">Falsche Reihenfolge!</span>';
+        } else {
+            // Wenn die bisherige Teilsequenz stimmt
+            if (poolWords.length > 0) {
+                targetContainer.className = 'target-zone correct-partial';
+                feedbackArea.innerHTML = '';
+            } else {
+                // Ganzer Satz komplett richtig gelöst
+                targetContainer.className = 'target-zone correct-full';
+                isTransitioning = true;
+                
+                if (currentSentenceIndex < sentencesPool.length - 1) {
+                    feedbackArea.innerHTML = '<span class="success-text">Отлично! Der Satz ist richtig...</span>';
+                    setTimeout(() => {
+                        currentSentenceIndex++;
+                        loadSentence();
+                    }, 1500);
+                } else {
+                    feedbackArea.innerHTML = '<span class="success-text">Bravo! Du hast alle 5 Sätze fehlerfrei geschafft! 🎉</span>';
+                }
+            }
+        }
+    }
+
+    restartBtn.addEventListener('click', initGame);
+    initGame();
+</script>
+
+</body>
+</html>
