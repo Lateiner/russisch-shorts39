@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Chat-Dialog</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --chat-bg: #efeae2;
+            --bubble-in: #ffffff;
+            --bubble-out-correct: #d9fdd3;
+            --bubble-out-incorrect: #ffebee;
+            --success-color: #2ec4b6;
+            --error-color: #e71d36;
+            --text-color: #2b2d42;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            height: 85vh;
+            max-height: 700px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background-color: #075e54;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #128c7e;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .chat-status {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .chat-online {
+            font-size: 0.75rem;
+            color: #cfd8dc;
+        }
+
+        /* Chat Verlauf */
+        .chat-window {
+            flex-grow: 1;
+            background-color: var(--chat-bg);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23b4b4b4' fill-opacity='0.05'%3E%3Cpath fill-rule='evenodd' d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z'/%3E%3C/g%3E%3C/svg%3E");
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Chat-Blasen */
+        .msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            animation: popIn 0.3s ease;
+        }
+
+        .msg-in {
+            background-color: var(--bubble-in);
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+
+        .msg-out {
+            align-self: flex-end;
+            border-top-right-radius: 0;
+            color: #000;
+        }
+
+        .msg-out.correct {
+            background-color: var(--bubble-out-correct);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .msg-out.incorrect {
+            background-color: var(--bubble-out-incorrect);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .system-feedback {
+            align-self: center;
+            background-color: rgba(224, 240, 255, 0.9);
+            color: #1d3557;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Unterer Bereich: Antwortmöglichkeiten */
+        .chat-input-area {
+            background-color: #f0f2f5;
+            padding: 15px;
+            border-top: 1px solid #e3e6e8;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            width: 100%;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not(:disabled) {
+                background-color: #e8f0fe;
+                border-color: var(--primary-color);
+            }
+        }
+
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Utility Buttons */
+        .utility-row {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-restart {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-restart:hover {
+            background-color: #5a6268;
+        }
+
+        /* Animationen */
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Chat Kopfzeile -->
+    <div class="chat-header">
+        <div class="chat-avatar">A</div>
+        <div class="chat-status">
+            <span class="chat-name">Person A (Анна)</span>
+            <span class="chat-online">schreibt...</span>
+        </div>
+    </div>
+
+    <!-- Chat Verlauffenster -->
+    <div class="chat-window" id="chat-window">
+        <div class="msg msg-in">Что это у тебя за книга?</div>
+        <!-- Hier werden Antworten und Feedback dynamisch reingeschrieben -->
+    </div>
+
+    <!-- Interaktionsbereich -->
+    <div class="chat-input-area">
+        <div class="options-container" id="options-container">
+            <!-- Buttons werden per JS geladen -->
+        </div>
+        <div class="utility-row">
+            <button class="btn-restart" id="restart-btn">Neustart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Antwortoptionen (1 richtige Antwort, 2 logische/grammatikalische Ablenker)
+    const chatOptions = [
+        { text: "Это учебник по русскому языку.", correct: true, feedback: "Правильно! Das ist die perfekte, grammatikalisch korrekte Antwort auf die Frage nach dem Buch." },
+        { text: "Я не понимаю эту машину.", correct: false, feedback: "Passt leider nicht. Person A hat nach einem Buch (книга) gefragt, nicht nach einem Auto (машина)." },
+        { text: "Кто это за человек?", correct: false, feedback: "Leider falsch. Das ist eine Gegenfrage, die übersetzt 'Was ist das für ein Mensch?' bedeutet und keinen Sinn ergibt." }
+    ];
+
+    const chatWindow = document.getElementById('chat-window');
+    const optionsContainer = document.getElementById('options-container');
+    const restartBtn = document.getElementById('restart-btn');
+
+    // Fisher-Yates Mischer
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function initChat() {
+        // Chat fenster leeren bis auf die Ausgangsfrage
+        chatWindow.innerHTML = '<div class="msg msg-in">Что это у тебя за книга?</div>';
+        optionsContainer.innerHTML = '';
+        
+        // Optionen mischen und Buttons bauen
+        const shuffledOptions = shuffle([...chatOptions]);
+        
+        shuffledOptions.forEach(opt => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.textContent = opt.text;
+            button.addEventListener('click', () => handleSelectOption(opt));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function handleSelectOption(option) {
+        // Alle Buttons deaktivieren
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        // Ausgewählte Nachricht in den Chat schieben
+        const playerMsg = document.createElement('div');
+        playerMsg.className = `msg msg-out ${option.correct ? 'correct' : 'incorrect'}`;
+        playerMsg.textContent = option.text;
+        chatWindow.appendChild(playerMsg);
+
+        // Systemerklärung / Feedback hinzufügen
+        const systemMsg = document.createElement('div');
+        systemMsg.className = 'system-feedback';
+        systemMsg.innerHTML = option.feedback;
+        chatWindow.appendChild(systemMsg);
+
+        // Automatisch nach unten scrollen bei neuen Nachrichten
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    restartBtn.addEventListener('click', initChat);
+
+    // Anwendung starten
+    initChat();
+</script>
+
+</body>
+</html>
